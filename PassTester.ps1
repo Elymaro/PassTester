@@ -95,7 +95,7 @@ function NTDS_copy {
     Get-ADDBAccount -BootKey $Key -DatabasePath "$directory_exports_NTDS\Active Directory\ntds.dit" -All |`
     Format-Custom -View HashcatNT | Out-File "$directory_audit\Hashdump.txt"
 
-    #Deleting empty lines and krbtgt account
+    #Deleting empty lines and krbtgt account and machines acounts
     Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" -and $_ -notmatch "\$" } | Set-Content "$directory_audit\Hashdump_cleared.txt"
     Write-Host "$(date) - Extract Done !"
 }
