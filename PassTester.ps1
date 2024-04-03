@@ -95,8 +95,8 @@ function NTDS_copy {
     Get-ADDBAccount -BootKey $Key -DatabasePath "$directory_exports_NTDS\Active Directory\ntds.dit" -All |`
     Format-Custom -View HashcatNT | Out-File "$directory_audit\Hashdump.txt"
 
-    #Deleting empty lines
-    Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' } | Set-Content "$directory_audit\Hashdump_cleared.txt"
+    #Deleting empty lines and krbtgt account
+    Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" } | Set-Content "$directory_audit\Hashdump_cleared.txt"
     Write-Host "$(date) - Extract Done !"
 }
 
@@ -175,7 +175,7 @@ function Password_Control {
     Write-Host "`n$i/$total_users users have been tested :"
     Write-Host "$empty_count empty passwords" -ForegroundColor Yellow
     Write-Host "$compromised_count compromised passwords" -ForegroundColor green
-    Write-Host "results available at $directory_audit\results\"
+    Write-Host "Results available at $directory_audit\results\"
     Stop-Transcript | Out-Null
     Start-Sleep 60
 }
