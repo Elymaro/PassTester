@@ -5,7 +5,11 @@ PassTester is a tool for finding user passwords that are most vulnerable to dict
 
 First, the tool extracts the NTDS database from the Active Directory (requires domain admin rights). This can be done from any machine in the domain.
 
-Once this has been done, the script retrieves the NTLM hash of each user in the Active Directory directory and compares it with a database containing, to date, almost 9 billion leaked passwords. No information such as the domain name, user name, etc. is transmitted, only the NTLM hash is provided. If this is carried out as part of an audit, it is recommended not to carry out this second phase from the company's public IP address in order to limit any risk of reverse resolution.
+Once this has been done, the script retrieves the NTLM hash of each user in the Active Directory directory and compares it with a database containing, to date, almost 9 billion leaked passwords. No information such as the domain name, user name, etc. is transmitted, only the NTLM hash is provided.
+
+The script will pause for 10 minutes every 1000 hashes so as not to reach the limit set by the ntlm.p website.
+
+If this is carried out as part of an audit, it is recommended not to carry out this second phase from the company's public IP address in order to limit any risk of reverse resolution.
 
 Be sure to delete the NTDS extraction files at the end of each run to limit any risk of data compromise.
 
