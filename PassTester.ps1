@@ -96,7 +96,7 @@ function NTDS_copy {
     Format-Custom -View HashcatNT | Out-File "$directory_audit\Hashdump.txt"
 
     #Deleting empty lines and krbtgt account
-    Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" } | Set-Content "$directory_audit\Hashdump_cleared.txt"
+    Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" -and $_ -notmatch "\$" } | Set-Content "$directory_audit\Hashdump_cleared.txt"
     Write-Host "$(date) - Extract Done !"
 }
 
