@@ -61,7 +61,6 @@ function NTDS_copy {
         New-Item -ItemType Directory -Path "$directory_exports_NTDS" | Out-Null
     }
 
-
     #Copy of the NTDS database
     if ($env:LOGONSERVER.Substring(2) -ne $env:COMPUTERNAME)
     {
@@ -84,7 +83,6 @@ function NTDS_copy {
     {
         Write-Host "$(date) - Extracting NTDS database ..."
         NTDSUTIL "Activate Instance NTDS" "IFM" "Create Full $directory_exports_NTDS" "q" "q"# | Out-Null
-        
     }
 
     Write-Host "$(date) - NTDS database decryption"
@@ -96,7 +94,9 @@ function NTDS_copy {
     Format-Custom -View HashcatNT | Out-File "$directory_audit\Hashdump.txt"
 
     #Deleting empty lines and krbtgt account and machines acounts
-    Get-Content "$directory_audit\Hashdump.txt" | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" -and $_ -notmatch "\$" } | Set-Content "$directory_audit\Hashdump_cleared.txt"
+    $NTDS = Get-Content "$directory_audit\Hashdump.txt"
+    $NTDS | Where-Object { $_ -ne '' -and $_ -notmatch "krbtgt" -and $_ -notmatch "\$" } | Get-Random -Count $NTDS.Count | Set-Content "$directory_audit\Hashdump_cleared.txt"
+    
     Write-Host "$(date) - Extract Done !"
 }
 
@@ -111,6 +111,8 @@ function Password_Control {
     $total_users = $NTDS.count
     $compromised_count = 0
     $empty_count = 0
+    #Users randomized to avoid to inject Administrator and Guest user in first
+    $mixed_users = $NTDS | Get-Random -Count $NTDS.Count
 
     Write-Host "$(date) - Password control ..."
 
@@ -127,7 +129,7 @@ function Password_Control {
     $i = 0
 
     # Control task
-    foreach($user_key in $NTDS)
+    foreach($user_key in $mixed_users)
     {   
         # Update the progress bar
         $progressParams.PercentComplete = ($i++ / $totalUsers) * 100
@@ -136,7 +138,6 @@ function Password_Control {
 
         if ($i -match "999")
         {Start-Sleep 600}
-        
 
         $user = $user_key.split(":")[0]
         $hash = $user_key.split(":")[1]
@@ -183,8 +184,8 @@ function Password_Control {
 
 Write-Host "Menu :"
 Write-Host "1 - Only extract NTDS database"
-Write-Host "2 - Only control NTLM hashes from a previous extract"
-Write-Host "3 - Full"
+Write-Host "2 - Only control NTLM hashes from a previous extract (to do from anonymous IP address)"
+Write-Host "3 - Full (to do from anonymous IP address)"
 Write-Host "4 - Exit"
 
 $choice = Read-Host "Select an option"
