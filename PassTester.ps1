@@ -171,9 +171,10 @@ function Password_Control {
 
 Write-Host "Menu :"
 Write-Host "1 - Only extract NTDS database"
-Write-Host "2 - Only control NTLM hashes from a previous extract (Recommended to do from a random public IP address)"
-Write-Host "3 - Full (Recommended to do on lab)"
+Write-Host "2 - Only control NTLM hashes from a previous extract " -NoNewline;Write-Host "(Recommended to do from a random public IP address)" -ForegroundColor Yellow
+Write-Host "3 - Full "-NoNewline;Write-Host "(Recommended to do on lab)" -ForegroundColor Yellow
 Write-Host "4 - Exit"
+
 
 $choice = Read-Host "Select an option"
 
