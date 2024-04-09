@@ -139,7 +139,7 @@ function Password_Control {
         $user = $user_key.split(":")[0]
         $hash = $user_key.split(":")[1]
 
-        if($hash -like "31d6cfe0d16ae931b73c59d7e0c089c0" -or $hash -eq $null)
+        if($hash -like "31d6cfe0d16ae931b73c59d7e0c089c0" -or $hash -like $null)
         {
             $user | Out-File "$directory_audit\results\Empty_users.txt" -Append
             Write-Host "[*]" -ForegroundColor Yellow -NoNewline; Write-Host " User's password " -NoNewline ; Write-Host "$user" -ForegroundColor Yellow -NoNewline; Write-Host " empty !"
