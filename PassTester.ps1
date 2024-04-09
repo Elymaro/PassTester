@@ -136,9 +136,6 @@ function Password_Control {
         $progressParams.Status = "$i / $totalUsers users"
         Write-Progress @progressParams
 
-        if ($i -match "999")
-        {Start-Sleep 600}
-
         $user = $user_key.split(":")[0]
         $hash = $user_key.split(":")[1]
 
@@ -150,25 +147,16 @@ function Password_Control {
             continue
         }
 
-        try {
-            $request = Invoke-WebRequest "https://ntlm.pw/$hash" -UseBasicParsing | Select-Object StatusCode
-        }
-        catch {
-            $request = $_.Exception
-        }
-        
-        if ($request.StatusCode -eq "200")
+        $prefix = $hash.ToUpper().Substring(0, 5)
+        $sufix = $hash.ToUpper().Substring(5)
+        $response = Invoke-WebRequest "https://api.pwnedpasswords.com/range/$($prefix)?mode=ntlm" -UseBasicParsing | Select-Object -ExpandProperty Content
+        $result_hashes= $response -split "`n" | ForEach { ($_ -split ":")[0] }
+
+        if ($result_hashes -split '\r?\n'| Where-Object { $_ -like $sufix })
         {
             $user | Out-File "$directory_audit\results\Compromised_users.txt" -Append
             Write-Host "[+]" -ForegroundColor Green -NoNewline; Write-Host " User's password " -NoNewline ; Write-Host "$user" -ForegroundColor Green -NoNewline; Write-Host " vulnerable !"
-            $compromised_count ++ 
-            #$request.content
-        }
-        elseif ($request.StatusCode -match "429")
-        {
-            Write "Too much request"
-            Write-Host "Stopped at user : $user" -ForegroundColor Red
-            Start-Sleep 600
+            $compromised_count ++
         }
     }
 
@@ -181,11 +169,10 @@ function Password_Control {
     Start-Sleep 60
 }
 
-
 Write-Host "Menu :"
 Write-Host "1 - Only extract NTDS database"
-Write-Host "2 - Only control NTLM hashes from a previous extract (to do from anonymous IP address)"
-Write-Host "3 - Full (to do from anonymous IP address)"
+Write-Host "2 - Only control NTLM hashes from a previous extract (Recommended to do from a random public IP address)"
+Write-Host "3 - Full (Recommended to do on lab)"
 Write-Host "4 - Exit"
 
 $choice = Read-Host "Select an option"
