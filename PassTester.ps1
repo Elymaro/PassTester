@@ -157,6 +157,15 @@ function Password_Control {
             $user | Out-File "$directory_audit\results\Compromised_users.txt" -Append
             Write-Host "[+]" -ForegroundColor Green -NoNewline; Write-Host " User's password " -NoNewline ; Write-Host "$user" -ForegroundColor Green -NoNewline; Write-Host " vulnerable !"
             $compromised_count ++
+            continue
+        }
+
+        if ($hash -like $(ConvertTo-NTHash -Password $(ConvertTo-SecureString -String $user -AsPlainText -Force)))
+        {
+            $user | Out-File "$directory_audit\results\Compromised_users.txt" -Append
+            Write-Host "[+]" -ForegroundColor Green -NoNewline; Write-Host " User's password " -NoNewline ; Write-Host "$user" -ForegroundColor Green -NoNewline; Write-Host " vulnerable !"
+            $compromised_count ++
+            continue
         }
     }
 
