@@ -32,7 +32,7 @@ function date {
 $directory_audit = "$env:USERPROFILE\Desktop\PassTester"
 $directory_exports_NTDS = "$directory_audit\NTDS"
 
-function NTDS_copy {
+function DSInternals {
     if(Get-Module DSInternals)
     {
         Import-Module DSInternals
@@ -41,7 +41,9 @@ function NTDS_copy {
     {
         Install-Module -Name DSInternals
     }
+}
 
+function NTDS_copy {
     if (!$(Test-Path $directory_audit))
     {
         Write-Host "$(date) - Creating directories"
@@ -169,10 +171,40 @@ function Password_Control {
         }
     }
 
+
+    ###### Control not unique NTLM Hashes #####
+    $hashDict = @{}
+    $not_unique_count = 0
+    foreach ($mixed_users_key in $mixed_users) {
+        if ($mixed_users_key -match "^(.*?):(.*)$") {
+            $user = $matches[1]
+            $hash = $matches[2]
+            if (! [string]::IsNullOrEmpty($hash)) {
+                if ($hashDict.ContainsKey($hash)) {
+                    $hashDict[$hash] += ", " + $user
+                } else {
+                    $hashDict[$hash] = $user
+                }
+            }
+        }
+    }
+
+    # Display users with a password used by at least one other user
+    $results = $hashDict.GetEnumerator() | Where-Object { $_.Value -like "*, *" } | ForEach-Object {
+        $users = $_.Value -split ", "
+        foreach ($user in $users) {
+            $user | Out-File "$directory_audit\results\Not_unique_pass.txt" -Append
+            Write-Host "[+]" -ForegroundColor Red -NoNewline; Write-Host " User's password " -NoNewline ; Write-Host "$user" -ForegroundColor Red -NoNewline; Write-Host " is not unique !"
+            $not_unique_count ++
+        }
+    }
+
     Write-Host "`n$(date) - Extract finished !"
     Write-Host "`n$i/$total_users users have been tested :"
     Write-Host "$empty_count empty passwords" -ForegroundColor Yellow
     Write-Host "$compromised_count compromised passwords" -ForegroundColor green
+    Write-Host "$not_unique_count not unique passwords" -ForegroundColor red
+
     Write-Host "Results available at $directory_audit\results\"
     Stop-Transcript | Out-Null
     Start-Sleep 60
@@ -188,9 +220,9 @@ Write-Host "4 - Exit"
 $choice = Read-Host "Select an option"
 
 Switch ($choice){
-    "1" {NTDS_copy; Stop-Transcript | Out-Null}
-    "2" {Password_Control}
-    "3" {NTDS_copy; Password_Control}
+    "1" {DSInternals;NTDS_copy; Stop-Transcript | Out-Null}
+    "2" {DSInternals;Password_Control}
+    "3" {DSInternals;NTDS_copy; Password_Control}
     "4" {exit}
     "Default" {Write-Host "Invalid choice. Please choose a valid option."}
 }
