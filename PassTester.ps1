@@ -92,8 +92,8 @@ function NTDS_copy {
     $Key = Get-BootKey -SystemHiveFilePath "$directory_exports_NTDS\registry\SYSTEM"
 
     #Decrypting the NTDS database with the SYSTEM key
-    Get-ADDBAccount -BootKey $Key -DatabasePath "$directory_exports_NTDS\Active Directory\ntds.dit" -All |`
-    Format-Custom -View HashcatNT | Out-File "$directory_audit\Hashdump.txt"
+    Get-ADDBAccount -BootKey $Key -DatabasePath "$directory_exports_NTDS\Active Directory\ntds.dit" -All -ExportFormat HashcatNT |`
+    Out-File "$directory_audit\Hashdump.txt"
 
     #Deleting empty lines and krbtgt account and machines acounts
     $NTDS = Get-Content "$directory_audit\Hashdump.txt"
